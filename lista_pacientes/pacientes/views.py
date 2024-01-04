@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from django.db.models import Q
 # Create your views here.
 class PacienteList(APIView):
     queryset = Paciente.objects.all()
@@ -16,15 +17,39 @@ class PacienteList(APIView):
                 description="Parametro de pesquisa por estado de andamento do paciente.",
                 type=openapi.TYPE_STRING,
                 enum=['Aguardando','Cancelado','EmAtendimento','Concluído']
-            )
+            ),
+            openapi.Parameter(
+                'start_date',
+                openapi.IN_QUERY,
+                description="Data inícial em formato [yyyy-MM-dd]",
+                type=openapi.TYPE_STRING,
+                format="date"
+            ),
+            openapi.Parameter(
+                'end_date',
+                openapi.IN_QUERY,
+                description="Data final em formato [yyyy-MM-dd]",
+                type=openapi.TYPE_STRING,
+                format="date"
+            ),
         ]
     )
     def get(self,request):
         status = request.query_params.get('status')
-        if status is not None:
-            pacientes = Paciente.objects.filter(status=status)
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        if start_date and end_date:
+            pacientes = Paciente.objects.filter(criado_em__range=[start_date,end_date])
+        elif start_date:
+            pacientes = Paciente.objects.filter(criado_em__gte=start_date)
+        elif end_date:
+            pacientes = Paciente.objects.filter(
+                Q(criado_em__lt=end_date) | Q(criado_em=end_date)
+            )
         else:
             pacientes = Paciente.objects.all()
+        if status is not None:
+            pacientes = pacientes.filter(status=status)
         serializerResponse = PacienteSerializer(pacientes,many=True)
         return Response(serializerResponse.data)
     @swagger_auto_schema(

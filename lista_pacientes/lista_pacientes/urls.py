@@ -21,9 +21,9 @@ from drf_yasg.views import get_schema_view as swagger_get_shemas_veiew
 
 schema_view = swagger_get_shemas_veiew(
     openapi.Info(
-        title='Pastebin API',
+        title='Consultas API',
         default_version='1.0.0',
-        description=''
+        description='Gerencia lista de pacientes'
     ),
     public=True
 )

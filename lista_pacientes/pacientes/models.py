@@ -18,14 +18,15 @@ class Paciente(models.Model):
         EM_ATENDIMENTO = 'EmAtendimento', 'Paciente em atendimento médico.',
         CONCLUIDO = 'Concluído', 'Consulta concluída.'
     class CondicaoPreferencial(models.TextChoices):
+        NAO_PREFERENCIAL = 'NaoPreferencial', 'pessoa sem condicao preferencial.',
         DEFICIENTE = 'Deficiente', 'pessoa com deficiência física.',
         PESSOA_IDOSA = 'PessoaIdosa', 'idosos com idade igual ou superior a sessenta e cinco anos.',
         GESTANTE = 'Gestante', 'mães em periodo de gestação.'
         LACTANTE = 'Lactante', 'mães com filho(a) recém nascido.',
         CRIANCA_DE_COLO = 'CriancaDeColo','pessoas acompanhadas por crianças de colo.',
-        NAO_PREFERENCIAL = 'NaoPreferencial' 'pessoa sem condicao preferencial.'
 
-    preferencial = models.TextField(
+    preferencial = models.CharField(
+        max_length = 15,
         choices = CondicaoPreferencial.choices,
         default = CondicaoPreferencial.NAO_PREFERENCIAL,
         verbose_name = 'Condição preferencial',
@@ -53,4 +54,9 @@ class Paciente(models.Model):
         default = timezone.now,
         verbose_name = 'data de entrada do paciente.',
         help_text = 'data de criação/inicio do paciente no sistema.'
+    )
+    nome = models.TextField(
+        default = '',
+        verbose_name = 'nome do paciente.',
+        help_text = 'nome do paciente.'
     )

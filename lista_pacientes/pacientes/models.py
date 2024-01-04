@@ -50,7 +50,7 @@ class Paciente(models.Model):
         verbose_name = 'Idade do paciente',
         help_text = 'Idade do paciente'
     )
-    criado_em = models.DateField(
+    criado_em = models.DateTimeField(
         default = timezone.now,
         verbose_name = 'data de entrada do paciente.',
         help_text = 'data de criação/inicio do paciente no sistema.'

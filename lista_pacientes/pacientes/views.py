@@ -39,7 +39,7 @@ class PacienteList(APIView):
                 openapi.IN_QUERY,
                 description='Filtar pacientes com preferencia.',
                 type=openapi.TYPE_STRING,
-                enum=['True','False']
+                enum=['false','true']
             )
         ]
     )
@@ -47,7 +47,7 @@ class PacienteList(APIView):
         status = request.query_params.get('status')
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
-        preferencial = request.query_params.get('preferencial')
+        is_preferencial = request.query_params.get('preferencial')
         if start_date and end_date:
             pacientes = Paciente.objects.filter(criado_em__range=[start_date,end_date])
         elif start_date:
@@ -60,8 +60,8 @@ class PacienteList(APIView):
             pacientes = Paciente.objects.all()
         if status is not None:
             pacientes = pacientes.filter(status=status)
-        if preferencial == 'True':
-            pacientes = pacientes.exclude(preferencial=Paciente.CondicaoPreferencial.NAO_PREFERENCIAL[0])
+        if is_preferencial == 'true':
+            pacientes = pacientes.exclude(preferencial=Paciente.CondicaoPreferencial.NAO_PREFERENCIAL.value)
         order_list = sorted(
             pacientes,
             key=lambda paciente:(
@@ -90,7 +90,7 @@ class PacienteList(APIView):
         nome = body.get('nome')
         criado_em = timezone.now()
 
-        if idade > 65:
+        if idade >= 65:
             preferencial = Paciente.CondicaoPreferencial.PESSOA_IDOSA.value
         if not preferencial in Paciente.CondicaoPreferencial.values:
             return Response(
@@ -121,3 +121,11 @@ class PacienteList(APIView):
         )
         new_paciente.save()
         return Response()
+    def put(self,request):
+        body = json.loads(request.body)
+        preferencial = body.get('preferencial')
+        sexo = body.get('sexo')
+        status = body.get('status')
+        idade = int(body.get('idade'))
+        nome = body.get('nome')
+        criado_em = timezone.now()

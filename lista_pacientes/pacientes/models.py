@@ -55,6 +55,11 @@ class Paciente(models.Model):
         verbose_name = 'data de entrada do paciente.',
         help_text = 'data de criação/inicio do paciente no sistema.'
     )
+    atualizado_em = models.DateTimeField(
+        default = timezone.now,
+        verbose_name = 'data de atualização.',
+        help_text = 'data da ultima atualização realizada no registro do paciente.'
+    )
     nome = models.TextField(
         default = '',
         verbose_name = 'nome do paciente.',

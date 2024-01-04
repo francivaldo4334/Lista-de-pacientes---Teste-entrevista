@@ -218,3 +218,37 @@ class PacienteList(APIView):
             response_serializer.data,
             status=200
         )
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                'id',
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER
+            )
+        ]
+    )
+    def delete(self,request):
+        param_id = request.query_params.get('id')
+        if param_id is None:
+            return Response(
+                "Error: param id is invalid.",
+                status=400
+            )
+        try:
+            try:
+                paciente = Paciente.objects.get(id=int(param_id))
+            except:
+                return Response(
+                    "Error: Item not found.",
+                    status=400
+                )
+            paciente.delete()
+            return Response(
+                "Item removed from database.",
+                status=204
+            )
+        except:
+            return Response(
+                "Error: unspecified error.",
+                status=500
+            )

@@ -11,6 +11,53 @@ import json
 class PacienteList(APIView):
     queryset = Paciente.objects.all()
     serializer_class = PacienteSerializer
+    def valid_paciente_params(
+            self,
+            preferencial,
+            sexo,
+            status,
+            idade,
+            nome
+    ):
+        if idade >= 65 and preferencial != Paciente.CondicaoPreferencial.PESSOA_IDOSA.value:
+            return (
+                f"Error: elderly patient but was not informed '{Paciente.CondicaoPreferencial.PESSOA_IDOSA.value}' in the param 'preferencial'.",
+                400
+            )
+        elif idade < 65 and preferencial == Paciente.CondicaoPreferencial.PESSOA_IDOSA.value:
+            return (
+                f"Error: patient is not preferential '{Paciente.CondicaoPreferencial.PESSOA_IDOSA.value}' in the param 'preferencial'.",
+                400
+            )
+        elif not preferencial in Paciente.CondicaoPreferencial.values:
+            return (
+                f"Error: value 'preferencial' is invalid. valid params {Paciente.CondicaoPreferencial.values}",
+                400
+            )
+        elif not sexo in Paciente.Sexo.values:
+            return (
+                f"Error: value 'sexo' is invalid. valid params {Paciente.Sexo.values}",
+                400
+            )
+        elif not status in Paciente.StatusAndamento.values:
+            return (
+                f"Error: value 'status' is invalid. valid params {Paciente.StatusAndamento.values}",
+                400
+            )
+        elif idade <= 0 or idade >= 500:
+            return (
+                "Error: value 'idade' is invalid.",
+                400
+            )
+        elif not nome:
+            return (
+                "Error: value 'nome' is invalid."
+            )
+        else:
+            return (
+            "successs",
+            200
+        )
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(
@@ -89,27 +136,17 @@ class PacienteList(APIView):
         idade = int(body.get('idade'))
         nome = body.get('nome')
         criado_em = timezone.now()
-
-        if idade >= 65:
-            preferencial = Paciente.CondicaoPreferencial.PESSOA_IDOSA.value
-        if not preferencial in Paciente.CondicaoPreferencial.values:
+        (text_response,status_response) = self.valid_paciente_params(
+            preferencial,
+            sexo,
+            status,
+            idade,
+            nome
+        )
+        if status_response != 200:
             return Response(
-                f"Error: value 'preferencial' is invalid. valid params {Paciente.CondicaoPreferencial.values}",
-                status=400
-            )
-        if not sexo in Paciente.Sexo.values:
-            return Response(
-                f"Error: value 'sexo' is invalid. valid params {Paciente.Sexo.values}",
-                status=400
-            )
-        if not status in Paciente.StatusAndamento.values:
-            return Response(
-                f"Error: value 'status' is invalid. valid params {Paciente.StatusAndamento.values}",
-                status=400
-            )
-        if idade <= 0 or idade >= 500:
-            return Response(
-                "Error: value 'idade' is invalid."
+                text_response,
+                status_response
             )
         new_paciente = Paciente(
             preferencial =preferencial,
@@ -120,7 +157,23 @@ class PacienteList(APIView):
             criado_em =criado_em,
         )
         new_paciente.save()
-        return Response()
+        response_serializer = PacienteSerializer(new_paciente)
+        return Response(
+            response_serializer.data,
+            status=201
+        )
+    @swagger_auto_schema(
+        request_body= PacienteSerializer,
+        manual_parameters=[
+            openapi.Parameter(
+                'id',
+                openapi.IN_QUERY,
+                description='identificador unico do paciente.',
+                type=openapi.TYPE_INTEGER,
+                mandatory=True
+            )
+        ]
+    )
     def put(self,request):
         body = json.loads(request.body)
         preferencial = body.get('preferencial')
@@ -128,4 +181,40 @@ class PacienteList(APIView):
         status = body.get('status')
         idade = int(body.get('idade'))
         nome = body.get('nome')
-        criado_em = timezone.now()
+        param_id = request.query_params.get('id')
+        if param_id is None:
+            return Response(
+                "Error: param id is invalid.",
+                status=400
+            )
+        try:
+            paciente = Paciente.objects.get(id = int(param_id))
+        except:
+            return Response(
+                "Error: item does not exist.",
+                status=404
+            )
+        (text_response,status_response) = self.valid_paciente_params(
+            preferencial,
+            sexo,
+            status,
+            idade,
+            nome
+        )
+        if status_response != 200:
+            return Response(
+                text_response,
+                status_response
+            )
+        paciente.preferencial=preferencial
+        paciente.sexo=sexo
+        paciente.status=status
+        paciente.idade=idade
+        paciente.nome=nome
+        paciente.atualizado_em = timezone.now()
+        paciente.save()
+        response_serializer = PacienteSerializer(paciente)
+        return Response(
+            response_serializer.data,
+            status=200
+        )

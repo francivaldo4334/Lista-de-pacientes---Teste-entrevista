@@ -48,7 +48,7 @@ class PacienteList(APIView):
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
         is_preferencial = request.query_params.get('preferencial')
-        if start_date and end_date:
+        if start_date and end_date and start_date != end_date:
             pacientes = Paciente.objects.filter(criado_em__range=[start_date,end_date])
         elif start_date:
             pacientes = Paciente.objects.filter(criado_em__gte=start_date)

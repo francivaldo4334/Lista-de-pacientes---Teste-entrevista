@@ -9,12 +9,12 @@ class Agendamento(models.Model):
         help_text='data marcada para o atendimento.'
     )
     criado_em = models.DateTimeField(
-        default=timezone.now(),
+        default=timezone.now,
         verbose_name='data de criação.',
         help_text='data de criação do registro de agendamento.'
     )
     atualizado_em = models.DateTimeField(
-        default=timezone.now(),
+        default=timezone.now,
         verbose_name='data de atualização.',
         help_text='data da ultima atualizacao do registro de agendamento.'
     )

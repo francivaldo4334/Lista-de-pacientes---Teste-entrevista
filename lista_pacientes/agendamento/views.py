@@ -5,7 +5,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from django.db.models import Q
 from pacientes.models import Paciente
 from .models import Agendamento
 from .serializers import AgendamentoSerializerBodyResponse, AgendamentoSerializerBodyRequest
@@ -13,8 +13,47 @@ from .serializers import AgendamentoSerializerBodyResponse, AgendamentoSerialize
 
 # Create your views here.
 class AgendamentoList(APIView):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                'status',
+                openapi.IN_QUERY,
+                description="Parametro de pesquisa por estado de andamento do paciente.",
+                type=openapi.TYPE_STRING,
+                enum=['Aguardando', 'Cancelado', 'EmAtendimento', 'Concluído']
+            ),
+            openapi.Parameter(
+                'start_date_of_scheduling',
+                openapi.IN_QUERY,
+                description='Data inícial em formato [yyyy-MM-dd]',
+                type=openapi.TYPE_STRING,
+                format='date'
+            ),
+            openapi.Parameter(
+                'end_date_of_scheduling',
+                openapi.IN_QUERY,
+                description='Data final em formato [yyyy-MM-dd]',
+                type=openapi.TYPE_STRING,
+                format='date'
+            ),
+        ]
+    )
     def get(self, request):
-        agendamento_list = Agendamento.objects.all()
+        status = request.query_params.get('status')
+        start_date = request.query_params.get('start_date_of_scheduling')
+        end_date = request.query_params.get('end_date_of_scheduling')
+        if start_date and end_date and start_date != end_date:
+            agendamento_list = Agendamento.objects.filter(agendado_para__range=[start_date,end_date])
+        elif start_date:
+            agendamento_list = Agendamento.objects.filter(agendado_para__gte=start_date)
+        elif end_date:
+            agendamento_list = Agendamento.objects.filter(
+                Q(agendado_para__lt=end_date) | Q(agendado_para=end_date)
+            )
+        else:
+            agendamento_list = Agendamento.objects.all()
+        if status is not None:
+            agendamento_list = [ag for ag in agendamento_list if ag.paciente.status == status]
         serializate_response = AgendamentoSerializerBodyResponse(agendamento_list, many=True)
         return Response(
             serializate_response.data,

@@ -31,5 +31,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('pacientes/', include('pacientes.urls')),
     path('agendamentos/', include('agendamento.urls')),
+    path('exames/', include('exame.urls')),
     path('swagger_ui/', schema_view.with_ui('swagger', cache_timeout=0), name='swagger-shema')
 ]

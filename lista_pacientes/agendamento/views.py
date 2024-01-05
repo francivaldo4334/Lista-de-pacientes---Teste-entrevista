@@ -1,11 +1,13 @@
 import json
 
+from django.db.models import Q
 from django.utils import timezone
-from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.db.models import Q
+
+from exame.models import Exame
 from pacientes.models import Paciente
 from .models import Agendamento
 from .serializers import AgendamentoSerializerBodyResponse, AgendamentoSerializerBodyRequest
@@ -13,6 +15,18 @@ from .serializers import AgendamentoSerializerBodyResponse, AgendamentoSerialize
 
 # Create your views here.
 class AgendamentoList(APIView):
+    def valid_exames(self,exames):
+        for exame in exames:
+            tipo = exame.get('tipo')
+            if not tipo in Exame.TipoExame.values:
+                return (
+                    f"Error: param 'tipo' not valid. valid params {Exame.TipoExame.values}",
+                    400
+                )
+        return (
+            "Success",
+            200
+        )
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(
@@ -43,7 +57,7 @@ class AgendamentoList(APIView):
         start_date = request.query_params.get('start_date_of_scheduling')
         end_date = request.query_params.get('end_date_of_scheduling')
         if start_date and end_date and start_date != end_date:
-            agendamento_list = Agendamento.objects.filter(agendado_para__range=[start_date,end_date])
+            agendamento_list = Agendamento.objects.filter(agendado_para__range=[start_date, end_date])
         elif start_date:
             agendamento_list = Agendamento.objects.filter(agendado_para__gte=start_date)
         elif end_date:
@@ -67,6 +81,13 @@ class AgendamentoList(APIView):
         body = json.loads(request.body)
         param_paciente_id = body.get('paciente')
         agendado_para = body.get('agendado_para')
+        exames = body.get('exames')
+        (text_response_valid, status_response_valid) = self.valid_exames(exames)
+        if status_response_valid != 200:
+            return Response(
+                text_response_valid,
+                status_response_valid
+            )
         try:
             paciente = Paciente.objects.get(id=int(param_paciente_id))
         except:
@@ -81,6 +102,13 @@ class AgendamentoList(APIView):
             paciente=paciente
         )
         new_agendamento.save()
+        for exame in exames:
+            new_exame = Exame(
+                tipo=exame.get('tipo'),
+                criado_em=timezone.now(),
+                agendamento=new_agendamento
+            )
+            new_exame.save()
         serializer_response = AgendamentoSerializerBodyResponse(new_agendamento)
         return Response(
             serializer_response.data,
@@ -99,11 +127,18 @@ class AgendamentoList(APIView):
             )
         ]
     )
-    def put(self,request):
+    def put(self, request):
         body = json.loads(request.body)
         param_agendamento_id = request.query_params.get('id')
         param_paciente_id = body.get('paciente')
         agendado_para = body.get('agendado_para')
+        exames = body.get('exames')
+        (text_response_valid, status_response_valid) = self.valid_exames(exames)
+        if status_response_valid != 200:
+            return Response(
+                text_response_valid,
+                status_response_valid
+            )
         try:
             agendamento = Agendamento.objects.get(id=int(param_agendamento_id))
         except:
@@ -122,6 +157,16 @@ class AgendamentoList(APIView):
         agendamento.paciente = paciente
         agendamento.atualizado_em = timezone.now()
         agendamento.save()
+        agendamento_exames = Exame.objects.filter(agendamento=agendamento)
+        for exame in agendamento_exames:
+            exame.delete()
+        for exame in exames:
+            new_exame = Exame(
+                tipo=exame.get('tipo'),
+                criado_em=timezone.now(),
+                agendamento=agendamento
+            )
+            new_exame.save()
         serializate_response = AgendamentoSerializerBodyResponse(agendamento)
         return Response(
             serializate_response.data,
@@ -138,7 +183,7 @@ class AgendamentoList(APIView):
             )
         ]
     )
-    def delete(self,request):
+    def delete(self, request):
         param_id = request.query_params.get('id')
         try:
 
@@ -159,4 +204,3 @@ class AgendamentoList(APIView):
                 "Error: unspecified error.",
                 status=500
             )
-

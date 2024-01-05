@@ -42,7 +42,7 @@ class ExameList(APIView):
     def delete(self,request):
         param_id = request.query_params.get('id')
         try:
-            exame = Exame.object.get(id=int(param_id))
+            exame = Exame.objects.get(id=int(param_id))
         except:
             return Response(
                 "Error: 'exame' not found.",

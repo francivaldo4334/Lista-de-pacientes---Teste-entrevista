@@ -5,4 +5,9 @@ class ExameSerializer(serializers.ModelSerializer):
     agendamento = serializers.IntegerField(source='agendamento.id',read_only=True)
     class Meta:
         model = Exame
-        fields = ['tipo','criado_em','agendamento']
+        fields = ['id','tipo','criado_em','agendamento']
+class ExameSerializerBodyRequest(serializers.ModelSerializer):
+    agendamento = serializers.IntegerField(source='agendamento.id',read_only=True)
+    class Meta:
+        model = Exame
+        fields = ['id','tipo','agendamento']

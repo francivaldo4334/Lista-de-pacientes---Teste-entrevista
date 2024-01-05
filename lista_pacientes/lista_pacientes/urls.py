@@ -30,5 +30,6 @@ schema_view = swagger_get_shemas_veiew(
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('pacientes/', include('pacientes.urls')),
+    path('agendamentos/', include('agendamento.urls')),
     path('swagger_ui/', schema_view.with_ui('swagger', cache_timeout=0), name='swagger-shema')
 ]

@@ -170,7 +170,7 @@ class PacienteList(APIView):
                 openapi.IN_QUERY,
                 description='identificador unico do paciente.',
                 type=openapi.TYPE_INTEGER,
-                mandatory=True
+                required=True
             )
         ]
     )
@@ -223,7 +223,8 @@ class PacienteList(APIView):
             openapi.Parameter(
                 'id',
                 openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER
+                type=openapi.TYPE_INTEGER,
+                required=True
             )
         ]
     )

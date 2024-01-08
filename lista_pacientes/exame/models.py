@@ -2,6 +2,7 @@ from django.db import models
 from agendamento.models import Agendamento
 from django.utils import timezone
 
+
 # Create your models here.
 class Exame(models.Model):
     class TipoExame(models.TextChoices):

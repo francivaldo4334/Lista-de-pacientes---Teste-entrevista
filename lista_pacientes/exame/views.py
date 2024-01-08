@@ -6,6 +6,7 @@ from .serializers import ExameSerializer
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+
 # Create your views here.
 class ExameList(APIView):
     @swagger_auto_schema(
@@ -29,6 +30,7 @@ class ExameList(APIView):
             serializer_exame_list.data,
             status=200
         )
+
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(

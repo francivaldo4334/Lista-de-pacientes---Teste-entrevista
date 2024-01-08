@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
+
 from pacientes.models import Paciente
+
 
 # Create your models here.
 class Agendamento(models.Model):
@@ -18,4 +20,4 @@ class Agendamento(models.Model):
         verbose_name='data de atualização.',
         help_text='data da ultima atualizacao do registro de agendamento.'
     )
-    paciente = models.ForeignKey(Paciente,on_delete=models.CASCADE)
+    paciente = models.ForeignKey(Paciente, on_delete=models.CASCADE)

@@ -1,20 +1,24 @@
 from django.db import models
 from django.utils import timezone
 
+
 # Create your models here.
 class Paciente(models.Model):
     class Meta:
         db_table = 'paciente'
         verbose_name = 'paciente'
         verbose_name_plural: str = "pacientes"
+
     class Sexo(models.TextChoices):
         H = 'H', 'Homen'
         M = 'M', 'Mulher'
+
     class StatusAndamento(models.TextChoices):
         AGUARDANDO = 'Aguardando', 'Paciente aguardando atendimento.',
         CANCELADO = 'Cancelado', 'Consulta cancelada pelo paciente ou pelo sistema.',
         EM_ATENDIMENTO = 'EmAtendimento', 'Paciente em atendimento médico.',
         CONCLUIDO = 'Concluído', 'Consulta concluída.'
+
     class CondicaoPreferencial(models.TextChoices):
         NAO_PREFERENCIAL = 'NaoPreferencial', 'pessoa sem condicao preferencial.',
         DEFICIENTE = 'Deficiente', 'pessoa com deficiência física.',

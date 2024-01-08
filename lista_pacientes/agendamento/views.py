@@ -15,7 +15,7 @@ from .serializers import AgendamentoSerializerBodyResponse, AgendamentoSerialize
 
 # Create your views here.
 class AgendamentoList(APIView):
-    def valid_exames(self,exames):
+    def valid_exames(self, exames):
         for exame in exames:
             tipo = exame.get('tipo')
             if not tipo in Exame.TipoExame.values:
@@ -27,6 +27,7 @@ class AgendamentoList(APIView):
             "Success",
             200
         )
+
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(
